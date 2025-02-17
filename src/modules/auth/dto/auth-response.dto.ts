@@ -9,5 +9,5 @@ export class AuthToken {
   @ApiProperty({
     example: '123456',
   })
-  refreshToken: string;
+  refreshToken?: string;
 }

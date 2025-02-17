@@ -45,9 +45,12 @@ export class JobConsumer extends WorkerHost {
           const response = await axios.post(
             `${PARSER_API_URL}/cv-scoring/score-internal`,
             {
-              jd: job,
+              jd: jobData,
               cv: {
-                skills: candidate.skills,
+                skills: candidate.skills.map((skill) => ({
+                  name: skill,
+                  isActive: true,
+                })),
               },
             },
             {
@@ -60,16 +63,20 @@ export class JobConsumer extends WorkerHost {
           const { data } = response.data;
 
           const existingResumeJobMatching =
-            await this.candidateJobMatchingRepository.findOneBy({
-              candidateId: candidate.id,
-              jobId: jobData.id,
+            await this.candidateJobMatchingRepository.findOne({
+              where: {
+                candidateId: candidate.id,
+                jobId: jobData.id,
+              },
             });
 
           if (existingResumeJobMatching) {
             // Update job matching score
-            existingResumeJobMatching.score = parseFloat(data.score);
-            await this.candidateJobMatchingRepository.save(
-              existingResumeJobMatching,
+            await this.candidateJobMatchingRepository.update(
+              existingResumeJobMatching.id,
+              {
+                score: parseFloat(data.score),
+              },
             );
           } else {
             // Save job matching score

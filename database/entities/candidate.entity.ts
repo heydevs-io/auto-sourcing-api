@@ -7,11 +7,11 @@ import {
   OneToMany,
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { PhoneCode, Gender } from '@enums';
 import { CandidateEducation } from './candidate-education.entity';
 import { CandidateLanguage } from './candidate-language.entity';
 import { CandidateWorkExperience } from './candidate-work-experience.entity';
 import { Location } from './location.entity';
+import { PhoneCode } from '@enums';
 
 @Entity()
 export class Candidate extends BaseEntity {
@@ -26,22 +26,7 @@ export class Candidate extends BaseEntity {
   email: string;
 
   @Column({ type: 'varchar', nullable: true })
-  avatar: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  address: string;
-
-  @Column({ type: 'varchar' })
-  firstName: string;
-
-  @Column({ type: 'varchar' })
-  lastName: string;
-
-  @Column({ type: 'enum', enum: Gender, nullable: true })
-  gender: Gender;
-
-  @Column({ type: 'date', nullable: true })
-  dateOfBirth: Date;
+  title: string;
 
   @Column({ type: 'enum', enum: PhoneCode, nullable: true })
   phoneCode: PhoneCode;
@@ -50,7 +35,13 @@ export class Candidate extends BaseEntity {
   phone: string;
 
   @Column({ type: 'varchar', nullable: true })
-  cvDownloadUrl: string;
+  avatar: string;
+
+  @Column({ type: 'varchar' })
+  firstName: string;
+
+  @Column({ type: 'varchar' })
+  lastName: string;
 
   @Column({ type: 'varchar', nullable: true })
   portfolio: string;
@@ -73,9 +64,6 @@ export class Candidate extends BaseEntity {
   @Column({ type: 'varchar', array: true, nullable: true })
   skills: string[];
 
-  @Column({ type: 'smallint', name: 'total_yoe', nullable: true })
-  totalYoE: number | null;
-
   @Column({
     type: 'tsvector',
     generatedType: 'STORED',
@@ -85,4 +73,7 @@ export class Candidate extends BaseEntity {
   })
   @Index('candidate_search_vector_idx', { synchronize: false })
   search_vector: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  linkedInUrl?: string;
 }

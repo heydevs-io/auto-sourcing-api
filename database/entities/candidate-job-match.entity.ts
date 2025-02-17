@@ -1,14 +1,32 @@
 import { CandidateConnectedStatus } from '@enums';
-import { Column, Entity, PrimaryColumn } from 'typeorm';
-import { BaseEntityWithoutId } from './base.entity';
-
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
+import { Candidate } from './candidate.entity';
+import { Job } from './job.entity';
+import { User } from './user.entity';
+import { BaseEntity } from './base.entity';
 @Entity()
-export class CandidateJobMatch extends BaseEntityWithoutId {
-  @PrimaryColumn()
+@Unique(['candidateId', 'jobId', 'userId'])
+export class CandidateJobMatch extends BaseEntity {
+  @Column('uuid')
   candidateId: string;
 
-  @PrimaryColumn()
+  @ManyToOne(() => Candidate)
+  @JoinColumn({ name: 'candidate_id' })
+  candidate: Candidate;
+
+  @Column('uuid')
   jobId: string;
+
+  @ManyToOne(() => Job)
+  @JoinColumn({ name: 'job_id' })
+  job: Job;
+
+  @Column('uuid')
+  userId: string;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @Column({ type: 'int', nullable: true })
   score?: number;
@@ -22,4 +40,10 @@ export class CandidateJobMatch extends BaseEntityWithoutId {
 
   @Column({ type: 'varchar', nullable: true })
   rejectReason?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  connectInvitation?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  connectEmail?: string;
 }

@@ -1,37 +1,34 @@
 import { UserStatus } from '@enums';
 import {
-  ACCESS_TOKEN_EXPIRES_IN,
-  ACCESS_TOKEN_SECRET,
-  REFRESH_TOKEN_EXPIRES_IN,
-  REFRESH_TOKEN_SECRET,
+  DEFAULT_OTP,
+  NODE_ENV,
   SUPABASE_ANON_KEY,
   SUPABASE_URL,
 } from '@environments';
 import {
   SourcingBadRequestException,
   SourcingInternalServerError,
+  SourcingUnauthorizedException,
 } from '@exceptions';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { plainToInstance } from 'class-transformer';
 import { User } from 'database/entities';
-import { Repository } from 'typeorm';
+import { UserService } from '../user/user.service';
 import {
   AuthToken,
   RequestLoginOtpDto,
   RequestLoginOtpResponseDto,
   VerifyLoginOtpDto,
 } from './dto';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class AuthService {
   private supabase: SupabaseClient;
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly userService: UserService,
   ) {
     this.supabase = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!);
   }
@@ -40,11 +37,15 @@ export class AuthService {
     payload: RequestLoginOtpDto,
   ): Promise<RequestLoginOtpResponseDto> {
     const { email } = payload;
-    const user = await this.userRepository.findOneBy({ email });
+    const user = await this.userService.getUserByEmail(email);
     if (!user) {
-      await this.userRepository.save(
-        this.userRepository.create({ email, status: UserStatus.INACTIVE }),
-      );
+      await this.userService.create({ email });
+    }
+
+    if (NODE_ENV === 'development' || NODE_ENV === 'local') {
+      return plainToInstance(RequestLoginOtpResponseDto, {
+        message: 'OTP sent to email',
+      });
     }
 
     const { data, error } = await this.supabase.auth.signInWithOtp({
@@ -64,14 +65,23 @@ export class AuthService {
   async verifyLoginOtp(payload: VerifyLoginOtpDto): Promise<AuthToken> {
     const { email, otp } = payload;
     // check if user is active
-    const user = await this.userRepository.findOneBy({
-      email,
-    });
+    const user = await this.userService.getUserByEmail(email);
     if (!user) throw new SourcingBadRequestException('User not found');
 
-    await this.userRepository.update(user.id, {
+    await this.userService.updateStatus(user.id, {
       status: UserStatus.ACTIVE,
     });
+
+    if (NODE_ENV === 'development' || NODE_ENV === 'local') {
+      if (otp !== DEFAULT_OTP) {
+        throw new SourcingBadRequestException('Invalid OTP');
+      }
+      return plainToInstance(AuthToken, {
+        accessToken: this.generateToken({
+          id: user.id,
+        }),
+      });
+    }
 
     const { data, error } = await this.supabase.auth.verifyOtp({
       token: otp,
@@ -81,29 +91,30 @@ export class AuthService {
 
     if (error) throw new SourcingBadRequestException(error.message);
 
-    const accessToken = this.jwtService.sign(
-      {
-        id: user.id,
-      },
-      {
-        secret: ACCESS_TOKEN_SECRET,
-        expiresIn: ACCESS_TOKEN_EXPIRES_IN,
-      },
-    );
-
-    const refreshToken = this.jwtService.sign(
-      {
-        id: user.id,
-      },
-      {
-        secret: REFRESH_TOKEN_SECRET,
-        expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-      },
-    );
-
     return plainToInstance(AuthToken, {
-      accessToken,
-      refreshToken,
+      accessToken: this.generateToken({
+        id: user.id,
+      }),
     });
+  }
+
+  async validateUserById(userId: string): Promise<User> {
+    const user = await this.userService.getUserById(userId);
+    if (!user) {
+      throw new SourcingUnauthorizedException('Unauthorized');
+    }
+
+    const { status } = user;
+    if (status !== UserStatus.ACTIVE) {
+      throw new SourcingUnauthorizedException(
+        'Your account is inactive or blocked',
+      );
+    }
+
+    return user;
+  }
+
+  generateToken(payload: any): string {
+    return this.jwtService.sign(payload);
   }
 }

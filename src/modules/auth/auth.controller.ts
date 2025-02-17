@@ -1,3 +1,4 @@
+import { SourcingApiResponse } from '@decorators';
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -6,7 +7,6 @@ import {
   RequestLoginOtpResponseDto,
   VerifyLoginOtpDto,
 } from './dto';
-import { SourcingApiResponse } from '@decorators';
 
 @Controller('auth')
 export class AuthController {

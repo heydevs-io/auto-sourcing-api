@@ -17,10 +17,10 @@ export class CandidateEducation extends BaseEntity {
   @Column({ type: 'varchar' })
   degree: string;
 
-  @Column({ type: 'smallint' })
+  @Column({ type: 'smallint', nullable: true })
   fromMonth: number;
 
-  @Column({ type: 'smallint' })
+  @Column({ type: 'smallint', nullable: true })
   fromYear: number;
 
   @Column({ type: 'smallint', nullable: true })

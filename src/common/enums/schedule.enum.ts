@@ -1,0 +1,5 @@
+export enum ScheduleType {
+  IMMEDIATE = 'IMMEDIATE',
+  NEXT_24_HOURS = 'NEXT_24_HOURS',
+  SPECIFIC_TIME = 'SPECIFIC_TIME',
+}

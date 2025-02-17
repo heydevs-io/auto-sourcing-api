@@ -42,6 +42,9 @@
       ],
       "@exceptions": [
         "src/common/exception"
+      ],
+      "@dtos": [
+        "src/common/dtos"
       ]
     }
   }

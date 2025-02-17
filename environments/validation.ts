@@ -31,6 +31,9 @@ class EnvironmentVariables {
   REFRESH_TOKEN_EXPIRES_IN: string;
 
   @IsString()
+  JWT_RESET_PASSWORD_KEY: string;
+
+  @IsString()
   SUPABASE_URL: string;
 
   @IsString()

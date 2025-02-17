@@ -17,19 +17,19 @@ export class CandidateWorkExperience extends BaseEntity {
   @Column()
   position: string;
 
-  @Column({ type: 'smallint' })
+  @Column({ type: 'smallint', nullable: true })
   fromMonth: number;
 
-  @Column({ type: 'smallint' })
+  @Column({ type: 'smallint', nullable: true })
   fromYear: number;
 
-  @Column({ type: 'smallint' })
+  @Column({ type: 'smallint', nullable: true })
   toMonth: number;
 
-  @Column({ type: 'smallint' })
+  @Column({ type: 'smallint', nullable: true })
   toYear: number;
 
-  @Column()
+  @Column({ type: 'text', nullable: true })
   description: string;
 
   @Column({ type: 'boolean', default: false })

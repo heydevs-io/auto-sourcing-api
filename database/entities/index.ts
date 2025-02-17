@@ -7,3 +7,5 @@ export * from './candidate-education.entity';
 export * from './candidate-language.entity';
 export * from './candidate-work-experience.entity';
 export * from './candidate-job-match.entity';
+export * from './note.entity';
+export * from './candidate-interaction-log.entity';

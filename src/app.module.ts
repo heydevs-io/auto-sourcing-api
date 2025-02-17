@@ -12,8 +12,9 @@ import {
   ParseJdModule,
   AuthModule,
   JobModule,
-  LinkedInModule,
   UploaderModule,
+  DevModeModule,
+  UserModule,
 } from './modules';
 import { BullModule } from '@nestjs/bullmq';
 import { BullConfig } from './config';
@@ -22,8 +23,9 @@ const modules = [
   ParseJdModule,
   AuthModule,
   JobModule,
-  LinkedInModule,
   UploaderModule,
+  DevModeModule.registerAsync(),
+  UserModule,
 ];
 
 @Module({

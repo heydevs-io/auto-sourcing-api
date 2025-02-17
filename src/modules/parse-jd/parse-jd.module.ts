@@ -2,9 +2,7 @@ import { AiParseJdConfig } from '@config';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import { ParseJdController } from './parse-jd.controller';
 import { ParseJdService } from './parse-jd.service';
-import { JobModule } from '../job/job.module';
 
 @Module({
   imports: [
@@ -17,9 +15,8 @@ import { JobModule } from '../job/job.module';
         };
       },
     }),
-    JobModule,
   ],
-  controllers: [ParseJdController],
   providers: [ParseJdService],
+  exports: [ParseJdService],
 })
 export class ParseJdModule {}

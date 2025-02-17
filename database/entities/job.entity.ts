@@ -1,19 +1,30 @@
-import { Column, Entity, Index } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class Job extends BaseEntity {
   @Column()
+  userId: string;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
+
+  @Column()
   title: string;
 
-  @Column({ type: 'text', array: true })
-  keywords: string[];
+  @Column({ type: 'varchar', array: true, nullable: true })
+  keywords?: string[];
 
-  @Column({ type: 'text' })
-  searchCommand: string;
+  @Column({ type: 'varchar', nullable: true })
+  searchCommand?: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'varchar' })
   description: string;
+
+  @Column({ type: 'varchar', nullable: true, array: true })
+  requiredSkills?: string[];
 
   @Column({
     type: 'tsvector',

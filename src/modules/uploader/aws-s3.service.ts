@@ -36,6 +36,8 @@ export class AwsS3Service
 
   onApplicationBootstrap() {
     this.s3Client = new S3Client({
+      endpoint: 'http://localhost:4566', //TODO: Remove this when deploying to production
+      forcePathStyle: true, //TODO: Remove this when deploying to production
       region: this.config.region,
       credentials: {
         accessKeyId: this.config.accessKeyId,

@@ -14,7 +14,7 @@ export class ParseJdService {
   async parseJdFromAiService(fileUrl: string): Promise<ParseJdResponseDto> {
     // Download the file from the URL
     const response = await lastValueFrom(
-      this.httpService.post('', {
+      this.httpService.post('/parse-document-dify/jd', {
         documentUrl: fileUrl,
       }),
     );
@@ -26,21 +26,7 @@ export class ParseJdService {
 
     const result = {
       ...data,
-      locations:
-        data.country && data.state
-          ? [
-              {
-                country: data.country,
-                state: data.state,
-              },
-            ]
-          : [],
       description: resultDescription,
-      totalYearOfExperience: data.totalYearsOfExperience,
-      interviewReward: data.interviewingReward,
-      screeningReward: data.qualifiedReward,
-      minSalary: data.minimumSalary,
-      maxSalary: data.maximumSalary,
     };
 
     return plainToInstance(ParseJdResponseDto, result, {

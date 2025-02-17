@@ -3,7 +3,7 @@ import { SourcingUnauthorizedException } from '@exceptions';
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {

@@ -6,6 +6,12 @@ import {
 import { ICloudStorageService } from 'src/core/abstract';
 import { PresignedUrlResponseDto } from './dtos';
 import { v4 as uuidV4 } from 'uuid';
+import {
+  AWS_S3_BUCKET,
+  AWS_S3_REGION,
+  CLOUD_LOCAL,
+  CLOUD_STORAGE_PUBLIC_URL,
+} from '@environments';
 
 const SAVE_DIRECTORY_PATH_ON_CLOUD = 'uploads';
 
@@ -16,7 +22,9 @@ export class UploaderService {
   constructor(private readonly fileService: ICloudStorageService) {}
 
   private getPublicUrl(path: string): string {
-    return `${process.env.CLOUD_STORAGE_PUBLIC_URL}/${path}`;
+    return CLOUD_LOCAL
+      ? `https://${AWS_S3_BUCKET}.s3.${AWS_S3_REGION}.amazonaws.com/${path}`
+      : `${CLOUD_STORAGE_PUBLIC_URL}/${AWS_S3_BUCKET}/${path}`;
   }
 
   async handleGetUploadPresignedUrl(

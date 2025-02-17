@@ -1,10 +1,15 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class AccountSetting extends BaseEntity {
-  @Column()
+  @Column('uuid')
   userId: string;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @Column({ nullable: true })
   linkedIn: string;
