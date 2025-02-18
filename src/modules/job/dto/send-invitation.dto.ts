@@ -6,7 +6,7 @@ import {
   IsString,
   ValidateIf,
 } from 'class-validator';
-import { ScheduleType } from '@enums';
+import { ScheduleType, InvitationType } from '@enums';
 
 export class SendInvitationDto {
   @IsString()
@@ -26,4 +26,8 @@ export class SendInvitationDto {
   @IsNotEmpty()
   @ValidateIf((object) => object.scheduleType === ScheduleType.SPECIFIC_TIME)
   sentAt?: Date;
+
+  @IsEnum(InvitationType)
+  @IsNotEmpty()
+  invitationType: InvitationType;
 }

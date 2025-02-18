@@ -6,3 +6,4 @@ export * from './uploader/uploader.module';
 export * from './dev-mode/dev-mode.module';
 export * from './user/user.module';
 export * from './novu/novu.module';
+export * from './note/note.module';

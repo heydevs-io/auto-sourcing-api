@@ -8,3 +8,4 @@ export * from './gender.enum';
 export * from './language.enum';
 export * from './job.enum';
 export * from './schedule.enum';
+export * from './invitation.enum';
