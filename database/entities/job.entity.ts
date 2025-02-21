@@ -20,7 +20,7 @@ export class Job extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   searchCommand?: string;
 
-  @Column({ type: 'varchar' })
+  @Column()
   description: string;
 
   @Column({ type: 'varchar', nullable: true, array: true })
