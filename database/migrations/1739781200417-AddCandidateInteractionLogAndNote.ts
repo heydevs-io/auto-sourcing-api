@@ -27,9 +27,6 @@ export class AddCandidateInteractionLogAndNote1739781200417
     );
     await queryRunner.query(`ALTER TABLE "jobs" ADD "user_id" uuid NOT NULL`);
     await queryRunner.query(
-      `ALTER TABLE "jobs" ADD "description" character varying NOT NULL`,
-    );
-    await queryRunner.query(
       `ALTER TABLE "jobs" ADD "required_skills" character varying array`,
     );
     await queryRunner.query(
@@ -252,7 +249,6 @@ export class AddCandidateInteractionLogAndNote1739781200417
       `ALTER TABLE "candidate_job_matches" DROP COLUMN "id"`,
     );
     await queryRunner.query(`ALTER TABLE "jobs" DROP COLUMN "required_skills"`);
-    await queryRunner.query(`ALTER TABLE "jobs" DROP COLUMN "description"`);
     await queryRunner.query(`ALTER TABLE "jobs" DROP COLUMN "user_id"`);
     await queryRunner.query(
       `ALTER TABLE "candidates" DROP COLUMN "linked_in_url"`,
