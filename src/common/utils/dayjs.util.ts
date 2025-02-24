@@ -167,6 +167,12 @@ export class DateJS {
     return dayjs.utc(date).isBetween(a, b, c, d);
   }
 
+  static diff(date: ConfigType, dateToCompare: ConfigType, unit: OpUnitType) {
+    const date1 = dayjs.utc(date);
+    const date2 = dayjs.utc(dateToCompare);
+    return date2.diff(date1, unit);
+  }
+
   static utc(date?: ConfigType) {
     return dayjs.utc(date);
   }

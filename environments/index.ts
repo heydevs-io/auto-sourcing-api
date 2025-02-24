@@ -45,3 +45,12 @@ export const AWS_S3_BUCKET = process.env.AWS_S3_BUCKET;
 
 // * OTP
 export const DEFAULT_OTP = process.env.DEFAULT_OTP || '111111';
+
+// * Novu
+export const NOVU_API_KEY = process.env.NOVU_API_KEY!;
+export const NOVU_SERVER_URL = process.env.NOVU_SERVER_URL!;
+
+// * Daily setting
+export const DEFAULT_GMAIL_DAILY_LIMIT = parseInt(
+  process.env.DEFAULT_GMAIL_DAILY_LIMIT || '100',
+);

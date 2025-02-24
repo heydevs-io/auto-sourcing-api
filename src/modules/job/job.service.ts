@@ -1,7 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CandidateJobMatch, Job } from 'database/entities';
-import { Repository } from 'typeorm';
+import {
+  CandidateJobMatch,
+  Job,
+  InvitationQueue,
+  AccountSetting,
+} from 'database/entities';
+import { Between, In, IsNull, Repository } from 'typeorm';
 import { CandidateService } from '../candidate/candidate.service';
 import { CandidateDto, CreateCandidateDto } from '../candidate/dto';
 import {
@@ -26,12 +31,24 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { JOB_QUEUE_NAME, JOB_QUEUE_TASK } from './queue/constants';
 import { Queue } from 'bullmq';
 import { NovuService } from '../novu/novu.service';
+import { DateJS } from '@utils';
+import { DEFAULT_GMAIL_DAILY_LIMIT } from '@environments';
+import { ScheduleType } from '../../common/enums';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class JobService {
   constructor(
     @InjectRepository(Job)
     private readonly jobRepository: Repository<Job>,
+
+    @InjectRepository(InvitationQueue)
+    private readonly invitationQueueRepository: Repository<InvitationQueue>,
+
+    @InjectRepository(AccountSetting)
+    private readonly accountSettingRepository: Repository<AccountSetting>,
 
     private readonly candidateService: CandidateService,
 
@@ -44,6 +61,9 @@ export class JobService {
     private readonly jobQueue: Queue,
 
     private readonly novuService: NovuService,
+
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
   ) {}
 
   async getAll(
@@ -119,6 +139,14 @@ export class JobService {
       candidateId: candidate?.id,
       jobId: id,
       userId,
+    });
+
+    // identity user to novu
+    await this.novuService.identifySubscriber({
+      candidateId: candidate?.id,
+      email: candidate?.email,
+      firstName: candidate?.firstName,
+      lastName: candidate?.lastName,
     });
 
     await this.jobQueue.add(JOB_QUEUE_TASK.MATCH_JOB, {
@@ -216,10 +244,65 @@ export class JobService {
     data: SendInvitationDto,
     userId: string,
   ): Promise<MessageResponseDto> {
-    //TODO: Implement send invitation
-    await this.novuService.sendInvitation(data, userId, id);
+    if (
+      data.scheduleType === ScheduleType.SPECIFIC_TIME &&
+      DateJS.sameOrBefore(data.sentAt, new Date())
+    ) {
+      throw new SourcingBadRequestException('Sent at must be in the future');
+    }
+
+    const userSetting = await this.accountSettingRepository.findOne({
+      where: { userId },
+    });
+
+    const emailLimit = userSetting?.mailDailyLimit || DEFAULT_GMAIL_DAILY_LIMIT;
+
+    const dateInvitation = await this.invitationQueueRepository.count({
+      where: {
+        userId,
+        scheduledAt: Between(
+          DateJS.getStartOfDay(new Date()).toDate(),
+          DateJS.getEndOfDay(new Date()).toDate(),
+        ),
+      },
+    });
+
+    let message: string | null = null;
+    const restLimit = dateInvitation + data.candidateIds.length - emailLimit;
+    if (restLimit > 0) {
+      message = `Your limit setting is already reached today. So we will send ${data.candidateIds.length - restLimit > 1 ? `${data.candidateIds.length - restLimit} invitations` : '1 invitation'} today and the rest will be sent in the next day`;
+    }
+    const { candidateIds, ...rest } = data;
+    for (let i = 0; i < candidateIds.length; i++) {
+      await this.novuService.sendInvitation({
+        ...rest,
+        jobId: id,
+        userId,
+        candidateId: candidateIds[i],
+        scheduleType:
+          i < restLimit ? rest.scheduleType : ScheduleType.NEXT_24_HOURS,
+      });
+    }
     return {
-      message: 'Invitation have been scheduled successfully',
+      message: message || 'Invitation have been scheduled successfully',
     };
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async handleCron() {
+    this.logger.info('Cron job running');
+    const invitations = await this.invitationQueueRepository.find({
+      where: {
+        scheduledAt: Between(
+          DateJS.getStartOfDay(new Date()).toDate(),
+          DateJS.getEndOfDay(new Date()).toDate(),
+        ),
+        sentAt: IsNull(),
+      },
+    });
+
+    await this.invitationQueueRepository.delete({
+      id: In(invitations.map((invitation) => invitation.id)),
+    });
   }
 }

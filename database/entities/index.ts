@@ -9,3 +9,5 @@ export * from './candidate-work-experience.entity';
 export * from './candidate-job-match.entity';
 export * from './note.entity';
 export * from './candidate-interaction-log.entity';
+export * from './invitation-queue.entity';
+export * from './account-setting.entity';

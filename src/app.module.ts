@@ -18,6 +18,7 @@ import {
 } from './modules';
 import { BullModule } from '@nestjs/bullmq';
 import { BullConfig } from './config';
+import { ScheduleModule } from '@nestjs/schedule';
 
 const modules = [
   ParseJdModule,
@@ -68,6 +69,8 @@ const modules = [
     BullModule.forRootAsync({
       useClass: BullConfig,
     }),
+
+    ScheduleModule.forRoot(),
 
     ...modules,
   ],

@@ -144,4 +144,8 @@ export class CandidateService {
 
     return plainToInstance(CandidateInteractionLogDto, logs);
   }
+
+  async getCandidateById(id: string) {
+    return await this.candidateRepository.findOne({ where: { id } });
+  }
 }

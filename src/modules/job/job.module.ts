@@ -2,7 +2,13 @@ import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Candidate, CandidateJobMatch, Job } from 'database/entities';
+import {
+  AccountSetting,
+  Candidate,
+  CandidateJobMatch,
+  InvitationQueue,
+  Job,
+} from 'database/entities';
 import { CandidateModule } from '../candidate/candidate.module';
 import { JobController } from './job.controller';
 import { JobService } from './job.service';
@@ -13,7 +19,13 @@ import { JobConsumer } from './queue/job.consumer';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Job, CandidateJobMatch, Candidate]),
+    TypeOrmModule.forFeature([
+      Job,
+      CandidateJobMatch,
+      Candidate,
+      InvitationQueue,
+      AccountSetting,
+    ]),
     BullModule.registerQueue({ name: JOB_QUEUE_NAME }),
     HttpModule,
     CandidateModule,

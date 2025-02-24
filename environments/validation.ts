@@ -62,6 +62,12 @@ class EnvironmentVariables {
 
   @IsString()
   AWS_S3_BUCKET: string;
+
+  @IsString()
+  NOVU_API_KEY: string;
+
+  @IsString()
+  NOVU_SERVER_URL: string;
 }
 
 export function validate(config: Record<string, unknown>) {

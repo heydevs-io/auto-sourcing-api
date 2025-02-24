@@ -21,5 +21,5 @@ export class AccountSetting extends BaseEntity {
   linkedInDailyLimit: number;
 
   @Column({ nullable: true, type: 'int' })
-  gmailDailyLimit: number;
+  mailDailyLimit: number;
 }

@@ -45,6 +45,9 @@
       ],
       "@dtos": [
         "src/common/dtos"
+      ],
+      "@utils": [
+        "src/common/utils"
       ]
     }
   }

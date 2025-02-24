@@ -1,31 +1,35 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { BaseEntity } from './base.entity';
+import { User } from './user.entity';
 import { Candidate } from './candidate.entity';
 import { Job } from './job.entity';
-import { User } from './user.entity';
-import { BaseEntity } from './base.entity';
+
 @Entity()
-export class CandidateInteractionLog extends BaseEntity {
+export class InvitationQueue extends BaseEntity {
   @Column('uuid')
   userId: string;
 
-  @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
+  @ManyToOne(() => User)
   user: User;
 
   @Column('uuid')
   candidateId: string;
 
-  @ManyToOne(() => Candidate)
   @JoinColumn({ name: 'candidate_id' })
+  @ManyToOne(() => Candidate)
   candidate: Candidate;
 
   @Column('uuid')
   jobId: string;
 
-  @ManyToOne(() => Job)
   @JoinColumn({ name: 'job_id' })
+  @ManyToOne(() => Job)
   job: Job;
 
-  @Column()
-  log: string;
+  @Column({ type: 'timestamptz', nullable: true })
+  sentAt: Date;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  scheduledAt: Date;
 }
