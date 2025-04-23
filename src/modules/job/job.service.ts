@@ -1,31 +1,36 @@
+import { PageDto, PageMetaDto, PageOptionsDto } from '@dtos';
+import { SourcingBadRequestException } from '@exceptions';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CandidateJobMatch, Job } from 'database/entities';
+import { Queue } from 'bullmq';
+import { plainToInstance } from 'class-transformer';
+import {
+  CandidateInteractionLog,
+  CandidateJobMatch,
+  Job,
+} from 'database/entities';
 import { Repository } from 'typeorm';
 import { CandidateService } from '../candidate/candidate.service';
 import { CandidateDto, CreateCandidateDto } from '../candidate/dto';
+import { NovuService } from '../novu/novu.service';
+import { ParseJdService } from '../parse-jd/parse-jd.service';
 import {
   AnalyzeSearchCommandResponseDto,
   CandidateUpdatedResponseDto,
   ImportJobDto,
   MessageResponseDto,
-  UpdateCandidateStatusDto,
   SendInvitationDto,
+  UpdateCandidateStatusDto,
 } from './dto';
-import { SourcingBadRequestException } from '@exceptions';
-import { ParseJdService } from '../parse-jd/parse-jd.service';
 import {
   JobDeletedResponseDto,
   JobDto,
   JobUpdatedResponseDto,
   UpdateJobDto,
 } from './dto/job.dto';
-import { plainToInstance } from 'class-transformer';
-import { PageDto, PageMetaDto, PageOptionsDto } from '@dtos';
-import { InjectQueue } from '@nestjs/bullmq';
 import { JOB_QUEUE_NAME, JOB_QUEUE_TASK } from './queue/constants';
-import { Queue } from 'bullmq';
-import { NovuService } from '../novu/novu.service';
+import { CandidateConnectedStatus } from '@enums';
 
 @Injectable()
 export class JobService {
@@ -33,17 +38,20 @@ export class JobService {
     @InjectRepository(Job)
     private readonly jobRepository: Repository<Job>,
 
-    private readonly candidateService: CandidateService,
-
     @InjectRepository(CandidateJobMatch)
     private readonly candidateJobMatchRepository: Repository<CandidateJobMatch>,
 
+    @InjectRepository(CandidateInteractionLog)
+    private readonly candidateInteractionLogRepository: Repository<CandidateInteractionLog>,
+
+    private readonly candidateService: CandidateService,
+
     private readonly parseJdService: ParseJdService,
+
+    private readonly novuService: NovuService,
 
     @InjectQueue(JOB_QUEUE_NAME)
     private readonly jobQueue: Queue,
-
-    private readonly novuService: NovuService,
   ) {}
 
   async getAll(
@@ -173,6 +181,16 @@ export class JobService {
         'Failed to update candidate status',
       );
     }
+    const loggingCreate = this.candidateInteractionLogRepository.create({
+      candidateId,
+      jobId,
+      log: `Status updated: ${data.status} ${
+        data.status === CandidateConnectedStatus.REJECTED
+          ? `- reason: ${data.rejectReason}`
+          : ''
+      }`,
+    });
+    await this.candidateInteractionLogRepository.save(loggingCreate);
     return {
       isUpdated: true,
     };

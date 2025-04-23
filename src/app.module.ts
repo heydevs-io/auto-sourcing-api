@@ -15,6 +15,8 @@ import {
   UploaderModule,
   DevModeModule,
   UserModule,
+  CandidateModule,
+  NoteModule,
 } from './modules';
 import { BullModule } from '@nestjs/bullmq';
 import { BullConfig } from './config';
@@ -26,6 +28,8 @@ const modules = [
   UploaderModule,
   DevModeModule.registerAsync(),
   UserModule,
+  CandidateModule,
+  NoteModule,
 ];
 
 @Module({
